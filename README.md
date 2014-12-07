@@ -1,15 +1,17 @@
-# Agave Clients #
+# agave_common #
 
 ## Overview ##
 
-Python package for building web service for the Agave platform.
+Python package for building web services for the Agave platform.
 
 ## Installation ##
 Most likely you will want to add this package as a requirement in your requirements file. Add:
 
+```
 -e git+git@bitbucket.org:jstubbs/agave_common.git#egg=agave_common
+```
 
-to a requriements.txt file to be able to import from the package "common".
+to a requirements.txt file to be able to import from the package "common".
 
 Install from source: Clone the repository, change into the project directory, activate a
 virtualenv if appropriate and run:
