@@ -6,7 +6,7 @@ noauth which is effectively a no-op and jwt which checks a JSON Web Token for sp
 
 __author__ = 'jstubbs'
 
-from base64 import b64decode
+import base64
 from Crypto.PublicKey import RSA
 import functools
 import logging
@@ -29,7 +29,7 @@ def decode_jwt(jwt_header):
     # first, convert the public_key string to an RSA Key object:
     with open(settings.PUB_KEY, 'r') as f:
         public_key = f.read().replace('\n','')
-    keyDER = b64decode(public_key)
+    keyDER = base64.b64decode(public_key)
     keyPub = RSA.importKey(keyDER)
     # verify the signature and return the base64-decoded message if verification passes
     return pyjwt.decode(jwt_header, keyPub)
@@ -151,10 +151,16 @@ def authenticated(view):
     # preserves the name and docstring of the the decorated function.
     @functools.wraps(view)
     def _decorator(self, request, *args, **kwargs):
+        auth_func = None
         try:
-            auth_func = settings.auth_func
+            if settings.AUTH_FUNC == 'basicauth':
+                auth_func = basicauth
+            elif settings.AUTH_FUNC == 'noauth':
+                auth_func = noauth
         except Exception:
+            pass
         # defaults to using the jwt decorator
+        if not auth_func:
             auth_func = jwt
         # make the call
         try:
