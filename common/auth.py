@@ -15,8 +15,10 @@ from django.conf import settings
 import jwt as pyjwt
 from rest_framework.response import Response
 from rest_framework import status
+import requests
 
 from responses import error_dict
+from error import Error
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +34,82 @@ def decode_jwt(jwt_header):
     # verify the signature and return the base64-decoded message if verification passes
     return pyjwt.decode(jwt_header, keyPub)
 
+def authenticate_user_to_store(username, password):
+    """
+    Authenticates a WSO2 user against in API Store and returns the cookies
+    set on the session.
+    Required: username, password.
+    """
+    url = settings.APIM_STORE_SERVICES_BASE_URL + settings.STORE_AUTH_URL
+    data = {'action':'login',
+            'username':username,
+            'password':password}
+    try:
+        r = requests.post(url, data, verify=False)
+    except Exception as e:
+        raise Error(str(e))
+    if not r.status_code == 200:
+        raise Error("Unable to authenticate user; status code: "
+                    + str(r.status_code) + "msg:" + str(r.content))
+    if r.json().get("error"):
+        logger.info("content:" + str(r.json()))
+        if r.json().get("message"):
+            raise Error(r.json().get("message").strip())
+        raise Error("Invalid username/password combination.")
+    return r.cookies
+
+def apim_auth(request):
+    """
+    Pulls the authorization header from the request and uses it to authenticate the user
+    to the WSO2 API Store.
+    """
+    # if 'HTTP_AUTHORIZATION' in request.META:
+    auth = request.META['HTTP_AUTHORIZATION'].split()
+    if len(auth) == 2:
+        # NOTE: We are only support basic authentication for now.
+        if auth[0].lower() == "basic":
+            username, password = base64.b64decode(auth[1]).split(':')
+            cookies = authenticate_user_to_store(username, password)
+            return username, cookies
+
+    # Either they did not provide an authorization header or
+    # something in the authorization attempt failed. Send a 401
+    # back to them to ask them to authenticate.
+    #
+    raise Error("Invalid Authorization header format.")
+
+
+
+
+# ---------------
+# Auth Functions
+# ---------------
+
+# The following functions can be used for the auth_func setting in your Django project.
+
 def noauth(view, self, request, *args, **kwargs):
     """
     Pass-through to be used in testing or when services are locked down by other means (e.g. firewall).
     """
+    return view(self, request, *args, **kwargs)
+
+def basicauth(view, self, request, *args, **kwargs):
+    """
+    Use basic auth against WSO2 API Manager.
+    """
+    if not 'HTTP_AUTHORIZATION' in request.META:
+        return Response(error_dict(msg="Authorization header missing or invalid."),
+                status=status.HTTP_401_UNAUTHORIZED,
+                headers={'WWW-Authenticate': 'Basic realm="iPlant Agave API"'})
+    try:
+        username, cookies = apim_auth(request)
+        request.wso2_username = username
+        request.wso2_cookies = cookies
+    except Error as e:
+        return Response(error_dict(msg=e.message), status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.info("Uncaught exception in authenticated decorator: " + str(e))
+        return Response(error_dict(msg="Unable to authenticate user."), status=status.HTTP_400_BAD_REQUEST)
     return view(self, request, *args, **kwargs)
 
 def jwt(view, self, request, *args, **kwargs):
