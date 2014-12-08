@@ -8,7 +8,7 @@ Python package for building web services for the Agave platform.
 Most likely you will want to add this package as a requirement in your requirements file. Add:
 
 ```
--e git+git@bitbucket.org:jstubbs/agave_common.git#egg=agave_common
+-e git+https://jstubbs@bitbucket.org/jstubbs/agave_common.git#egg=agave_common
 ```
 
 to a requirements.txt file to be able to import from the package "common".
