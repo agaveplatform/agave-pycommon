@@ -117,6 +117,7 @@ def jwt(view, self, request, *args, **kwargs):
     Check the request for a JWT, verifies the signature and parses user
     information from it.
     """
+    request.username = None
     if not settings.CHECK_JWT:
         return view(self, request, *args, **kwargs)
     request.service_admin = False
