@@ -1,10 +1,4 @@
 beanstalkc
-django
-django-cors-headers
-django-ldapdb
-djangorestframework==2.3.13
 pycrypto
-PyJWT
-python-ldap
 requests
 

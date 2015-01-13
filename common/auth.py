@@ -22,6 +22,17 @@ from error import Error
 
 logger = logging.getLogger(__name__)
 
+# monkey patch pyjwt to make it woke with WSO2's brokenss
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
+pyjwt.verify_methods.update({
+    'SHA256withRSA': lambda msg, key, sig: PKCS1_v1_5.new(key).verify(SHA256.new(msg), sig)
+})
+pyjwt.verify_methods.update({
+    'RS256': lambda msg, key, sig: PKCS1_v1_5.new(key).verify(SHA256.new(msg), sig)
+})
+
+
 def decode_jwt(jwt_header):
     """
     Verifies the signature on the JWT against a public key.
@@ -126,6 +137,7 @@ def jwt(view, self, request, *args, **kwargs):
         return Response(error_dict(msg="JWT missing."), status=status.HTTP_400_BAD_REQUEST)
     try:
         profile_data = decode_jwt(jwt_header)
+        request.jwt = profile_data
         logger.info("profile_data: " + str(profile_data))
         request.username = profile_data.get('http://wso2.org/claims/enduser')
         if len(request.username.split('/')) == 2:
