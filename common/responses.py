@@ -1,6 +1,8 @@
 """
 Utilities for generating responses across the API.
 """
+import json
+from django.http import HttpResponseBadRequest
 
 __author__ = 'jstubbs'
 
