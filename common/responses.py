@@ -16,10 +16,14 @@ def error_response(msg=None):
     return HttpResponseBadRequest(json.dumps(response_data),
                                   content_type="application/json")
 
-def error_dict(result={}, msg=None):
+def error_dict(result={}, msg=None, query_dict={}):
     """
     Enforces the '3 stanza' standard for error responses.
     """
+    naked = query_dict.get("naked", "false")
+    if naked.lower() == "true":
+        return result
+
     return {"status": "error",
             "message": msg,
             "result": result,
