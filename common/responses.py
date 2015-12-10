@@ -2,7 +2,7 @@
 Utilities for generating responses across the API.
 """
 import json
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 
 __author__ = 'jstubbs'
 
@@ -26,10 +26,14 @@ def error_dict(result={}, msg=None):
             "version": "2.0.0-SNAPSHOT-rc3fad",
     }
 
-def success_dict(result={}, msg=None):
+def success_dict(result={}, msg=None, query_dict={}):
     """
     Enforces the '3 stanza' standard for success responses.
     """
+    naked = query_dict.get("naked", "false")
+    if naked.lower() == "true":
+        return result
+
     return {"status": "success",
             "message": msg,
             "result": result,
