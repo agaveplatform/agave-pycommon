@@ -28,9 +28,9 @@ def error_dict(result={}, msg=None, query_dict={}):
     if naked.lower() == "true":
         return result
 
-    snake = query_dict.get("snake", "true")
-    if snake.lower() == "false":
-        result = util.camelize(result)
+    # snake = query_dict.get("snake", "true")
+    # if snake.lower() == "false":
+    #     result = util.camelize(result)
 
     return {"status": "error",
             "message": msg,
@@ -46,9 +46,9 @@ def success_dict(result={}, msg=None, query_dict={}):
     if naked.lower() == "true":
         return result
 
-    snake = query_dict.get("snake", "true")
-    if snake.lower() == "false":
-        result = util.camelize(result)
+    # snake = query_dict.get("snake", "true")
+    # if snake.lower() == "false":
+    #     result = util.camelize(result)
 
     return {"status": "success",
             "message": msg,
