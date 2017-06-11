@@ -18,7 +18,7 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name='agave_pycommon',
-    version=open('common/VERSION').read().strip(),
+    version=open('pycommon/VERSION').read().strip(),
     description='Python package for building services for the Agave platform.',
     long_description=readme,
     author='Rion Dooley',
