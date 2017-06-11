@@ -1,18 +1,22 @@
+__author__ = 'deardooley'
+
 """
 Utilities for generating responses across the API.
 """
 import json
 from django.http import HttpResponseBadRequest, HttpResponse
+from django.conf import settings
+import util
 
-__author__ = 'jstubbs'
 
 def error_response(msg=None):
     """
     Returns a 400 response in the proper JSON format.
     """
-    response_data = {"Status": "Error",
-                     "Message": msg,
+    response_data = {"status": "error",
+                     "message": msg,
                      "result":{}}
+
     return HttpResponseBadRequest(json.dumps(response_data),
                                   content_type="application/json")
 
@@ -24,10 +28,14 @@ def error_dict(result={}, msg=None, query_dict={}):
     if naked.lower() == "true":
         return result
 
+    snake = query_dict.get("snake", "true")
+    if snake.lower() == "false":
+        result = util.camelize(result)
+
     return {"status": "error",
             "message": msg,
             "result": result,
-            "version": "2.0.0-SNAPSHOT-rc3fad",
+            "version": settings.TENANT_ID
     }
 
 def success_dict(result={}, msg=None, query_dict={}):
@@ -38,10 +46,14 @@ def success_dict(result={}, msg=None, query_dict={}):
     if naked.lower() == "true":
         return result
 
+    snake = query_dict.get("snake", "true")
+    if snake.lower() == "false":
+        result = util.camelize(result)
+
     return {"status": "success",
             "message": msg,
             "result": result,
-            "version": "2.0.0-SNAPSHOT-rc3fad",
+            "version": settings.TENANT_ID,
     }
 
 def success_response(result={}, msg=None):
@@ -50,7 +62,8 @@ def success_response(result={}, msg=None):
     """
     response_data = {"status":"Success",
                      "message":msg,
-                     "result":result
+                     "result": {},
                      }
+
     return  HttpResponse(json.dumps(response_data),
                          content_type="application/json")

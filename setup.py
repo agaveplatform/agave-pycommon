@@ -17,22 +17,22 @@ with open('requirements.txt', 'r') as f:
         dependencies.append(line)
 
 setup(
-    name='agave_common',
+    name='agave_pycommon',
     version=open('common/VERSION').read().strip(),
     description='Python package for building services for the Agave platform.',
     long_description=readme,
-    author='Joe Stubbs',
-    author_email='jstubbs@tacc.utexas.edu',
-    url='https://bitbucket.org/jstubbs/agave_common',
+    author='Rion Dooley',
+    author_email='deardooley@gmail.com',
+    url='https://bitbucket.org/deardooley/agave-pycommon',
     packages=[
-        'common'
+        'pycommon'
     ],
     install_requires=dependencies,
     include_package_data=True,
     # data_files=[('etc', ['adama.conf'])],
     license="MIT",
     zip_safe=False,
-    keywords='agave_common',
+    keywords='agave_pycommon',
     classifiers=[
         'Development Status :: 1 - Pre-Alpha',
         'Intended Audience :: Developers',
