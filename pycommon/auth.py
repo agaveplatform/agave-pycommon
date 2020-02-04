@@ -111,7 +111,7 @@ def basicauth(view, self, request, *args, **kwargs):
     if not 'HTTP_AUTHORIZATION' in request.META:
         return Response(error_dict(msg="Authorization header missing or invalid."),
                 status=status.HTTP_401_UNAUTHORIZED,
-                headers={'WWW-Authenticate': 'Basic realm="iPlant Agave API"'})
+                headers={'WWW-Authenticate': 'Basic realm="Agave Platform"'})
     try:
         username, cookies = apim_auth(request)
         request.wso2_username = username

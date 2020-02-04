@@ -23,7 +23,7 @@ setup(
     long_description=readme,
     author='Rion Dooley',
     author_email='deardooley@gmail.com',
-    url='https://bitbucket.org/deardooley/agave-pycommon',
+    url='https://github.com/agaveplatform/agave-pycommon',
     packages=[
         'pycommon'
     ],
