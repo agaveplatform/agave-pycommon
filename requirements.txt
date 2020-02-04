@@ -1,5 +1,5 @@
 beanstalkc
 pycrypto
 requests
-django==1.7
+django==1.11.27
 logging
