@@ -25,12 +25,12 @@ logger = logging.getLogger(__name__)
 # monkey patch pyjwt to make it woke with WSO2's brokenss
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
-pyjwt.verify_methods.update({
-    'SHA256withRSA': lambda msg, key, sig: PKCS1_v1_5.new(key).verify(SHA256.new(msg), sig)
-})
-pyjwt.verify_methods.update({
-    'RS256': lambda msg, key, sig: PKCS1_v1_5.new(key).verify(SHA256.new(msg), sig)
-})
+# pyjwt.verify_methods.update({
+#     'SHA256withRSA': lambda msg, key, sig: PKCS1_v1_5.new(key).verify(SHA256.new(msg), sig)
+# })
+# pyjwt.verify_methods.update({
+#     'RS256': lambda msg, key, sig: PKCS1_v1_5.new(key).verify(SHA256.new(msg), sig)
+# })
 
 
 def decode_jwt(jwt_header):
