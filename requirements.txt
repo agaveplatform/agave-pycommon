@@ -1,5 +1,7 @@
 beanstalkc
 pycrypto
 requests
+PyJWT
 django==1.11.28
 logging
+djangorestframework
