@@ -1,6 +1,7 @@
 """
 Utilities for generating responses across the API.
 """
+import os
 import json
 from django.http import HttpResponseBadRequest, HttpResponse
 from util import camelize, underscoreize
@@ -69,7 +70,7 @@ def filter_fields(content, query_dict={}):
         if isinstance(content, list):
             filter_resp = []
             for i in range(len(content)):
-                filter_resp.append({});
+                filter_resp.append({})
         else:
             filter_resp = {}
 
@@ -135,7 +136,7 @@ def error_dict(content={}, msg=None, query_dict={}):
     """
     naked = query_dict.get("naked", "false")
     if naked.lower() == "true":
-        return result
+        return content
 
     return {"status": "error",
             "message": msg,
@@ -154,12 +155,12 @@ def success_dict(content={}, msg=None, query_dict={}):
     """
     naked = query_dict.get("naked", "false")
     if naked.lower() == "true":
-        return result
+        return content
 
     return {"status": "success",
             "message": msg,
             "result": content,
-            "version": os.environ.get("AGAVE_VERSION", "2.2.6"),
+            "version": os.environ.get("AGAVE_VERSION", "2.2.24"),
             }
 
 
@@ -173,7 +174,7 @@ def success_response(content={}, msg=None):
     """
     response_data = {"status": "Success",
                      "message": msg,
-                     "result": result
+                     "result": content
                      }
     return HttpResponse(format_response(content),
                         content_type="application/json")

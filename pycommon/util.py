@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import re
+from logging import warnings
 
 
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
