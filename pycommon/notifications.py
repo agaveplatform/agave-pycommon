@@ -4,7 +4,7 @@ import logging
 import beanstalkc
 import json
 from django.conf import settings
-from util import deprecated
+from pycommon.util import deprecated
 
 def create_generic_notification(uuid, event, owner, body=None, tenant=None):
     """
@@ -51,13 +51,16 @@ def _push_notification_to_queue(message_data):
     Serializes the data dict and pushes it onto the message queue  
     """
     if message_data:
-        beanstalk = beanstalkc.Connection(host=settings.BEANSTALK_SERVER, port=settings.BEANSTALK_PORT)
-        beanstalk.use(settings.BEANSTALK_TUBE)
-        data = json.dumps(message_data)
-        beanstalk.put(data)
-        logging.debug("Message " + data + " placed on queue")
+        try:
+            beanstalk = beanstalkc.Connection(host=settings.BEANSTALK_SERVER, port=settings.BEANSTALK_PORT)
+            beanstalk.use(settings.BEANSTALK_TUBE)
+            data = json.dumps(message_data)
+            beanstalk.put(data)
+            logging.debug("Message " + data + " placed on queue")
+        except Exception as e:
+            logging.debug("Unable to push {} event for user {} onto queue; error: {}".format(message_data.event, message_data.uuid, str(e.message)))
     else:
-        logging.debug("Skipping pushing empty notification onto queue");
+        logging.debug("Skipping pushing empty notification onto queue")
 
 def build_profile_uuid(username):
     return settings.TENANT_UUID + "-" + username + "-" + settings.BEANSTALK_SRV_CODE
