@@ -34,6 +34,7 @@ def filter_camel_case(content, query_dict={}):
        :param query_dict: Dict
        :return: dict|None
     """
+    camel = "true"
     if query_dict.has_key("camelCase"):
         camel = query_dict.get("camelCase", "true")
     elif query_dict.has_key("camel_case"):
