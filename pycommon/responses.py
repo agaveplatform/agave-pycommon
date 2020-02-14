@@ -84,14 +84,14 @@ def filter_fields(content, query_dict={}):
 
         # for each field name given in the filter, copy that key/value to the new response content
         for field_path in filter_fields:
-            i = 0
             # if the content is a list, it must be applied to every entry
             if isinstance(content, list):
+                i = 0
                 for item in content:
                     filter_resp[i][field_path] = item[field_path]
+                    i = i+1
             else:
                 filter_resp[field_path] = content[field_path]
-
         return filter_resp
 
     else:
