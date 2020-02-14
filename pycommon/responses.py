@@ -34,7 +34,11 @@ def filter_camel_case(content, query_dict={}):
        :param query_dict: Dict
        :return: dict|None
     """
-    camel = query_dict.get("camel_case", "true")
+    if query_dict.has_key("camelCase"):
+        camel = query_dict.get("camelCase", "true")
+    elif query_dict.has_key("camel_case"):
+        camel = query_dict.get("camel_case", "true")
+
     if camel.lower() == "false":
         return underscoreize(content)
     else:
@@ -153,9 +157,6 @@ def success_dict(content={}, msg=None, query_dict={}):
     :param query_dict: dict
     :return: dict
     """
-    naked = query_dict.get("naked", "false")
-    if naked.lower() == "true":
-        return content
 
     return {"status": "success",
             "message": msg,
