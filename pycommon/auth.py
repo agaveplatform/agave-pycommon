@@ -10,9 +10,11 @@ import base64
 from Crypto.PublicKey import RSA
 import functools
 import logging
-
 from django.conf import settings
-import jwt as pyjwt
+
+import jwt
+from jwt.contrib.algorithms.pycrypto import RSAAlgorithm
+
 from rest_framework.response import Response
 from rest_framework import status
 import requests
@@ -22,28 +24,36 @@ from error import Error
 
 logger = logging.getLogger(__name__)
 
-# monkey patch pyjwt to make it woke with WSO2's brokenss
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA256
-# pyjwt.verify_methods.update({
-#     'SHA256withRSA': lambda msg, key, sig: PKCS1_v1_5.new(key).verify(SHA256.new(msg), sig)
-# })
-# pyjwt.verify_methods.update({
-#     'RS256': lambda msg, key, sig: PKCS1_v1_5.new(key).verify(SHA256.new(msg), sig)
-# })
+# use the pycrypto compatibility for legacy format support
+jwt.unregister_algorithm('RS256')
+jwt.register_algorithm('RS256', RSAAlgorithm(RSAAlgorithm.SHA256))
 
-
-def decode_jwt(jwt_header):
+def decode_jwt(jwt_header, verify=False):
     """
     Verifies the signature on the JWT against a public key.
     """
-    # first, convert the public_key string to an RSA Key object:
-    with open(settings.PUB_KEY, 'r') as f:
-        public_key = f.read().replace('\n','')
-    keyDER = base64.b64decode(public_key)
-    keyPub = RSA.importKey(keyDER)
-    # verify the signature and return the base64-decoded message if verification passes
-    return pyjwt.decode(jwt_header, keyPub)
+    try:
+        with open(settings.PUB_KEY, "rb") as f:
+            logger.info("Reading JWT public key from disk at \"{}\".".format(settings.PUB_KEY))
+            pubkey = f.read()
+            if pubkey:
+                # ensure we can read the file with or without the cert wrapper text
+                pubkeylines = pubkey.splitlines()
+                if pubkeylines[0].startswith('-----BEGIN') and  pubkeylines[len(pubkeylines) - 1].startswith('-----END'):
+                    b64data = '\n'.join(pubkey.splitlines()[1:-1]).replace('\n', '')
+                else:
+                    b64data = '\n'.join(pubkey.splitlines()).replace('\n', '')
+        f.close()
+    except OSError as err:
+        raise Error("Unable to read JWT public key file from disk at \"{}\".".format(settings.PUB_KEY))
+
+    # the pub key is just a base64 encoded DER key at this point
+    derdata = base64.b64decode(b64data)
+    # import the DER key as an RSA public key
+    pubkey = RSA.importKey(derdata)
+    # pass the key to pyjwt to parsing
+    return jwt.decode(jwt_header, pubkey, algorithms='RS256')
+
 
 def authenticate_user_to_store(username, password):
     """
@@ -123,20 +133,18 @@ def basicauth(view, self, request, *args, **kwargs):
         return Response(error_dict(msg="Unable to authenticate user."), status=status.HTTP_400_BAD_REQUEST)
     return view(self, request, *args, **kwargs)
 
-def jwt(view, self, request, *args, **kwargs):
+def jwtauth(view, self, request, *args, **kwargs):
     """
     Check the request for a JWT, verifies the signature and parses user
     information from it.
     """
     request.username = None
-    if not settings.CHECK_JWT:
-        return view(self, request, *args, **kwargs)
     request.service_admin = False
     jwt_header = request.META.get(settings.JWT_HEADER)
     if not jwt_header:
         return Response(error_dict(msg="JWT missing."), status=status.HTTP_400_BAD_REQUEST)
     try:
-        profile_data = decode_jwt(jwt_header)
+        profile_data = decode_jwt(jwt_header, settings.CHECK_JWT)
         request.jwt = profile_data
         logger.info("profile_data: " + str(profile_data))
         request.username = profile_data.get('http://wso2.org/claims/enduser')
@@ -174,7 +182,7 @@ def authenticated(view):
             pass
         # defaults to using the jwt decorator
         if not auth_func:
-            auth_func = jwt
+            auth_func = jwtauth
         # make the call
         try:
             rsp = auth_func(view, self, request, *args, **kwargs)
