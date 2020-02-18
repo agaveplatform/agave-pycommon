@@ -3,8 +3,9 @@ Module containing default authentication implementation (JWT) and hook for custo
 noauth which is effectively a no-op and jwt which checks a JSON Web Token for specific roles.
 
 """
-
 __author__ = 'jstubbs'
+
+from jwt import InvalidSignatureError, InvalidTokenError, PyJWTError, InvalidAlgorithmError
 
 import base64
 from Crypto.PublicKey import RSA
@@ -159,6 +160,12 @@ def jwtauth(view, self, request, *args, **kwargs):
         if roles and settings.USER_ADMIN_ROLE in roles:
             request.service_admin = True
         logger.info('admin: ' + str(request.service_admin))
+    except InvalidAlgorithmError as e:
+        return Response(error_dict(msg="Unsupported algorithm used to sign the JWT. error: " + e.message), status=status.HTTP_401_UNAUTHORIZED)
+    except InvalidSignatureError as e:
+        return Response(error_dict(msg="Invalid signature found for jwt. error: " + e.message), status=status.HTTP_401_UNAUTHORIZED)
+    except PyJWTError as e:
+        return Response(error_dict(msg="Invalid JWT found. error: " + e.message), status=status.HTTP_401_UNAUTHORIZED)
     except Exception as e:
         return Response(error_dict(msg=e.message), status=status.HTTP_400_BAD_REQUEST)
 
