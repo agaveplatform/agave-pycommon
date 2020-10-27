@@ -1,5 +1,5 @@
 beanstalkc
-cryptography==2.7
+cryptography==3.2
 requests
 pyjwt==1.7.1
 pycrypto==2.6.1
