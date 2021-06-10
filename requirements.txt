@@ -3,6 +3,6 @@ cryptography==2.7
 requests
 pyjwt==1.7.1
 pycrypto==2.6.1
-django==1.11.28
+django==2.2.24
 logging
 djangorestframework
