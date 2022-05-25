@@ -1,7 +1,7 @@
 beanstalkc
 cryptography==2.7
 requests
-pyjwt==1.7.1
+pyjwt==2.4.0
 pycrypto==2.6.1
 django==1.11.28
 logging
